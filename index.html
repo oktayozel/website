@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>oktay ozel</title>
+  <title>Oktay Ozel</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,24 +19,31 @@
 <body>
   <h1>Hello Internet</h1>
   <p>This is Oktay's page!</p>
-  <h2>Play the Dino Game while i am building the page</h2>
-  <canvas id="gameCanvas" width="600" height="200"></canvas>
+  <h2>Play the Dino Game while I am building the page</h2>
+  <canvas id="gameCanvas" width="800" height="200"></canvas>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    let dino = { x: 50, y: 150, width: 30, height: 30, velocityY: 0, jump: -12, gravity: 0.5 };
+    // Dino object
+    let dino = { x: 50, y: 150, width: 40, height: 40, velocityY: 0, jump: -12, gravity: 0.5 };
     let ground = 180;
     let obstacles = [];
-    let gameSpeed = 3;
+    let gameSpeed = 4;
     let isJumping = false;
     let score = 0;
+    let gameOver = false;
+
+    const dinoSprite = new Image();
+    dinoSprite.src = "https://www.svgrepo.com/show/331515/dino.svg";
+
+    const cactusSprite = new Image();
+    cactusSprite.src = "https://www.svgrepo.com/show/279179/cactus.svg";
 
     // Draw the dino
     function drawDino() {
-      ctx.fillStyle = "black";
-      ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+      ctx.drawImage(dinoSprite, dino.x, dino.y, dino.width, dino.height);
     }
 
     // Draw the ground
@@ -47,20 +54,21 @@
 
     // Draw obstacles
     function drawObstacles() {
-      ctx.fillStyle = "red";
       obstacles.forEach(obstacle => {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.drawImage(cactusSprite, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
       });
     }
 
     // Spawn new obstacles
     function spawnObstacle() {
-      let obstacle = { x: canvas.width, y: ground - 20, width: 20, height: 20 };
+      let obstacle = { x: canvas.width, y: ground - 20, width: 30, height: 30 };
       obstacles.push(obstacle);
     }
 
     // Update game elements
     function update() {
+      if (gameOver) return;
+
       // Dino physics
       dino.velocityY += dino.gravity;
       dino.y += dino.velocityY;
@@ -86,8 +94,9 @@
           dino.y < obstacle.y + obstacle.height &&
           dino.y + dino.height > obstacle.y
         ) {
+          gameOver = true;
           alert("Game Over! Your score: " + score);
-          document.location.reload();
+          resetGame();
         }
       });
 
@@ -105,11 +114,20 @@
       ctx.fillText("Score: " + score, 10, 20);
     }
 
+    // Reset the game
+    function resetGame() {
+      dino.y = 150;
+      dino.velocityY = 0;
+      obstacles = [];
+      score = 0;
+      gameOver = false;
+    }
+
     // Game loop
     function gameLoop() {
       update();
       render();
-      requestAnimationFrame(gameLoop);
+      if (!gameOver) requestAnimationFrame(gameLoop);
     }
 
     // Jump logic
@@ -121,7 +139,9 @@
     });
 
     // Start spawning obstacles
-    setInterval(spawnObstacle, 1500);
+    setInterval(() => {
+      if (!gameOver) spawnObstacle();
+    }, 1500);
 
     // Start the game
     gameLoop();
